@@ -13,7 +13,11 @@ from psycopg.types.json import Jsonb
 from services.auth_service import CurrentOrgMember
 from services.clerk_invite_service import ClerkInviteConfig, invite_candidates_from_resume_batch
 from services.resume_parser import ResumeParserConfig, parse_resume
-from services.resume_upload_contracts import RESUME_UPLOAD_JOB_TYPE, ResumeUploadJob
+from services.resume_upload_contracts import (
+    RESUME_UPLOAD_JOB_TYPE,
+    ResumeUploadJob,
+    ResumeUploadWorkerResult,
+)
 from services.storage_service import ObjectStorage
 
 
@@ -63,21 +67,23 @@ async def process_resume_upload_job(
                 "status": batch_state["status"],
             },
         )
-        return {
-            "batch_id": job.batch_id,
-            "organization": {
-                "id": current_member.organization_id,
-                "name": current_member.organization_name,
-                "slug": current_member.organization_slug,
-            },
-            "status": batch_state["status"],
-            "parsed_count": batch_state["parsed_count"],
-            "failed_count": batch_state["failed_count"],
-            "invited_count": 0,
-            "invite_failed_count": 0,
-            "invite_skipped_count": 0,
-            "items": [],
-        }
+        return ResumeUploadWorkerResult.model_validate(
+            {
+                "batch_id": job.batch_id,
+                "organization": {
+                    "id": current_member.organization_id,
+                    "name": current_member.organization_name,
+                    "slug": current_member.organization_slug,
+                },
+                "status": batch_state["status"],
+                "parsed_count": batch_state["parsed_count"],
+                "failed_count": batch_state["failed_count"],
+                "invited_count": 0,
+                "invite_failed_count": 0,
+                "invite_skipped_count": 0,
+                "items": [],
+            }
+        ).model_dump()
 
     logger.info(
         "Processing resume upload batch",
@@ -109,20 +115,22 @@ async def process_resume_upload_job(
         resend=job.resend_invites,
     )
 
-    result = {
-        "batch_id": job.batch_id,
-        "organization": {
-            "id": current_member.organization_id,
-            "name": current_member.organization_name,
-            "slug": current_member.organization_slug,
-        },
-        "parsed_count": parsed_count,
-        "failed_count": failed_count,
-        "invited_count": invite_result["sent_count"],
-        "invite_failed_count": invite_result["failed_count"],
-        "invite_skipped_count": invite_result["skipped_count"],
-        "items": item_results,
-    }
+    result = ResumeUploadWorkerResult.model_validate(
+        {
+            "batch_id": job.batch_id,
+            "organization": {
+                "id": current_member.organization_id,
+                "name": current_member.organization_name,
+                "slug": current_member.organization_slug,
+            },
+            "parsed_count": parsed_count,
+            "failed_count": failed_count,
+            "invited_count": invite_result["sent_count"],
+            "invite_failed_count": invite_result["failed_count"],
+            "invite_skipped_count": invite_result["skipped_count"],
+            "items": item_results,
+        }
+    )
     logger.info(
         "Finished resume upload batch",
         extra={
@@ -133,7 +141,7 @@ async def process_resume_upload_job(
             "invite_failed_count": invite_result["failed_count"],
         },
     )
-    return result
+    return result.model_dump()
 
 
 async def process_pending_resume_parse_items(

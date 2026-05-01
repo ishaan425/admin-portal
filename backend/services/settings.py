@@ -34,7 +34,6 @@ class AppSettings(BaseSettings):
     clerk_audience: str = ""
     clerk_webhook_secret: str = ""
 
-    auth_allow_local_headers: bool = False
     api_cors_origins: str = ""
     api_max_request_body_bytes: int = 15 * 1024 * 1024
 

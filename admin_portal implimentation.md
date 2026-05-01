@@ -624,7 +624,7 @@ backend/
 `auth_service.py`
 
 ```text
-verify Clerk/local admin access against organization_members
+verify Clerk bearer tokens and admin access against organization_members
 ```
 
 `batch_status_service.py`

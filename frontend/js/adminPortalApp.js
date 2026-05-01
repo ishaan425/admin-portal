@@ -9,11 +9,8 @@ export function createAdminPortalApp({ config, elements }) {
   const {
     API_URL,
     ORGANIZATION_SLUG,
-    LOCAL_CLERK_USER_ID,
-    BEARER_TOKEN,
     CLERK_PUBLISHABLE_KEY,
     CLERK_FRONTEND_API_URL,
-    ALLOW_LOCAL_DEV_LOGIN,
   } = config;
   const {
     authShell,
@@ -22,7 +19,6 @@ export function createAdminPortalApp({ config, elements }) {
     signInMount,
     authStatus,
     authSignOutButton,
-    localDevButton,
     adminOnboardingForm,
     adminFullNameInput,
     adminDepartmentInput,
@@ -155,17 +151,7 @@ async function requestHeaders() {
     };
   }
 
-  if (BEARER_TOKEN) {
-    return {
-      Authorization: `Bearer ${BEARER_TOKEN}`,
-      "X-Organization-Slug": ORGANIZATION_SLUG,
-    };
-  }
-
-  return {
-    "X-Local-Clerk-User-Id": LOCAL_CLERK_USER_ID,
-    "X-Organization-Slug": ORGANIZATION_SLUG,
-  };
+  throw new Error("Admin sign-in is required before calling the API.");
 }
 
 function setAuthMessage(message) {
@@ -302,22 +288,9 @@ async function verifyAdminAccess(mode) {
   return body;
 }
 
-async function continueAsLocalAdmin() {
-  setAuthMessage("Checking local admin access...");
-  try {
-    await verifyAdminAccess("local");
-    signOutButton.classList.remove("hidden");
-    showToast("Signed in locally.");
-  } catch (error) {
-    setAuthMessage(error.message);
-    showToast(error.message);
-  }
-}
-
 async function initializeClerkAuth() {
   if (!CLERK_PUBLISHABLE_KEY) {
     setAuthMessage("Clerk publishable key is not configured for this admin frontend.");
-    if (ALLOW_LOCAL_DEV_LOGIN) localDevButton.classList.remove("hidden");
     return;
   }
 
@@ -369,7 +342,6 @@ async function initializeClerkAuth() {
     });
   } catch (error) {
     setAuthMessage(error.message);
-    if (ALLOW_LOCAL_DEV_LOGIN) localDevButton.classList.remove("hidden");
   }
 }
 
@@ -735,7 +707,6 @@ sourceViewButtons.forEach((button) => {
 studentsPageController.bindEvents({
   renderAll: () => renderDashboard(latestBatchResult || {}),
 });
-localDevButton.addEventListener("click", continueAsLocalAdmin);
 
 function resetSignedInUi() {
   currentAdmin = null;
@@ -800,7 +771,7 @@ adminOnboardingForm.addEventListener("submit", (event) => {
 signOutButton.addEventListener("click", () => {
   resetSignedInUi();
   showAuthShell();
-  setAuthMessage("Signed out of local admin mode.");
+  setAuthMessage("Signed out.");
 });
 sidebarLogoutButton.addEventListener("click", async () => {
   if (authMode === "clerk" && window.Clerk?.signOut) {
@@ -814,7 +785,7 @@ sidebarLogoutButton.addEventListener("click", async () => {
   }
   resetSignedInUi();
   showAuthShell();
-  setAuthMessage("Signed out of local admin mode.");
+  setAuthMessage("Signed out.");
 });
 clearButton.addEventListener("click", () => {
   selectedFiles = [];

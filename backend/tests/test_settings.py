@@ -9,7 +9,6 @@ def test_settings_load_from_env_file(tmp_path):
                 "APP_ENV=production",
                 "DATABASE_URL=postgresql://example/prod",
                 "API_CORS_ORIGINS=https://admin.growqr.com,https://app.growqr.com",
-                "AUTH_ALLOW_LOCAL_HEADERS=false",
             ]
         ),
         encoding="utf-8",
@@ -23,4 +22,3 @@ def test_settings_load_from_env_file(tmp_path):
         "https://admin.growqr.com",
         "https://app.growqr.com",
     ]
-    assert settings.auth_allow_local_headers is False

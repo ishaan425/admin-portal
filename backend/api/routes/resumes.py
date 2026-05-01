@@ -4,6 +4,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, File, Header, HTTPException, Request, UploadFile
 
+from schemas.api_responses import ResumeUploadBatchResponse, ResumeUploadEnqueueResponse
 from services.auth_service import AuthError, require_org_admin
 from services.batch_status_service import get_resume_upload_batch_status
 from services.database import connect
@@ -20,14 +21,13 @@ from services.storage_service import storage_from_settings
 router = APIRouter(prefix="/admin/resumes")
 
 
-@router.post("/bulk-upload")
+@router.post("/bulk-upload", response_model=ResumeUploadEnqueueResponse)
 async def bulk_upload_resumes(
     request: Request,
     files: Annotated[list[UploadFile], File(description="One or more PDF resumes.")],
     authorization: Annotated[str | None, Header(alias="Authorization")] = None,
-    x_local_clerk_user_id: Annotated[str | None, Header(alias="X-Local-Clerk-User-Id")] = None,
     x_organization_slug: Annotated[str | None, Header(alias="X-Organization-Slug")] = None,
-) -> dict:
+) -> ResumeUploadEnqueueResponse:
     try:
         uploaded_files = [
             UploadedResume(
@@ -47,7 +47,6 @@ async def bulk_upload_resumes(
                     conn,
                     authorization=authorization,
                     organization_slug=x_organization_slug,
-                    local_clerk_user_id=x_local_clerk_user_id,
                     settings=settings,
                 )
                 enqueue_result = create_resume_upload_batch(
@@ -68,21 +67,19 @@ async def bulk_upload_resumes(
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
-@router.get("/batches/{batch_id}")
+@router.get("/batches/{batch_id}", response_model=ResumeUploadBatchResponse)
 def get_bulk_resume_batch(
     request: Request,
     batch_id: str,
     authorization: Annotated[str | None, Header(alias="Authorization")] = None,
-    x_local_clerk_user_id: Annotated[str | None, Header(alias="X-Local-Clerk-User-Id")] = None,
     x_organization_slug: Annotated[str | None, Header(alias="X-Organization-Slug")] = None,
-) -> dict:
+) -> ResumeUploadBatchResponse:
     try:
         with connect() as conn:
             current_member = require_org_admin(
                 conn,
                 authorization=authorization,
                 organization_slug=x_organization_slug,
-                local_clerk_user_id=x_local_clerk_user_id,
                 settings=request.app.state.settings,
             )
             result = get_resume_upload_batch_status(

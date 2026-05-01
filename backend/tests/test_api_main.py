@@ -77,7 +77,7 @@ def test_request_size_limit_returns_413():
 
 
 def test_admin_me_returns_current_admin(monkeypatch):
-    app = create_app(AppSettings(auth_allow_local_headers=True))
+    app = create_app(AppSettings())
     client = TestClient(app)
 
     monkeypatch.setattr(admin, "connect", lambda: FakeConn())
@@ -86,7 +86,7 @@ def test_admin_me_returns_current_admin(monkeypatch):
     response = client.get(
         "/admin/me",
         headers={
-            "X-Local-Clerk-User-Id": "local_amity_admin",
+            "Authorization": "Bearer test-token",
             "X-Organization-Slug": "amity",
         },
     )
@@ -97,7 +97,7 @@ def test_admin_me_returns_current_admin(monkeypatch):
 
 
 def test_batch_status_endpoint_returns_batch(monkeypatch):
-    app = create_app(AppSettings(auth_allow_local_headers=True))
+    app = create_app(AppSettings())
     client = TestClient(app)
 
     monkeypatch.setattr(resumes, "connect", lambda: FakeConn())
@@ -119,7 +119,7 @@ def test_batch_status_endpoint_returns_batch(monkeypatch):
 
     response = client.get(
         "/admin/resumes/batches/batch-123",
-        headers={"X-Local-Clerk-User-Id": "local_amity_admin"},
+        headers={"Authorization": "Bearer test-token"},
     )
 
     assert response.status_code == 200

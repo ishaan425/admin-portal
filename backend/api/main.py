@@ -11,6 +11,7 @@ from fastapi.responses import JSONResponse
 
 from api.routes.admin import router as admin_router
 from api.routes.health import router as health_router
+from api.routes.jobs import router as jobs_router
 from api.routes.resumes import router as resumes_router
 from api.routes.webhooks import router as webhooks_router
 from services.settings import AppSettings, get_settings
@@ -30,11 +31,10 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
             CORSMiddleware,
             allow_origins=cors_origins,
             allow_credentials=True,
-            allow_methods=["GET", "POST", "OPTIONS"],
+            allow_methods=["GET", "POST", "PATCH", "OPTIONS"],
             allow_headers=[
                 "Authorization",
                 "Content-Type",
-                "X-Local-Clerk-User-Id",
                 "X-Organization-Slug",
             ],
         )
@@ -64,6 +64,7 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
 
     app.include_router(health_router)
     app.include_router(admin_router)
+    app.include_router(jobs_router)
     app.include_router(resumes_router)
     app.include_router(webhooks_router)
     return app

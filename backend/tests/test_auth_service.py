@@ -66,27 +66,10 @@ def test_resolve_org_admin_membership_requires_slug_for_multiple_orgs():
         resolve_org_admin_membership(conn, "user_123")
 
 
-def test_require_org_admin_rejects_local_header_when_disabled():
-    settings = AppSettings(auth_allow_local_headers=False)
-
+def test_require_org_admin_requires_bearer_token():
     with pytest.raises(AuthError, match="Bearer token is required"):
         require_org_admin(
             FakeConn([admin_row()]),
             authorization=None,
-            local_clerk_user_id="user_123",
-            settings=settings,
-        )
-
-
-def test_require_org_admin_allows_local_header_when_enabled():
-    settings = AppSettings(auth_allow_local_headers=True)
-
-    member = require_org_admin(
-        FakeConn([admin_row()]),
-        authorization=None,
-        organization_slug="lpu",
-        local_clerk_user_id="user_123",
-        settings=settings,
+            settings=AppSettings(),
     )
-
-    assert member.organization_slug == "lpu"

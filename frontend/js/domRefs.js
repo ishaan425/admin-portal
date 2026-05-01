@@ -5,7 +5,6 @@ const selectors = {
   signInMount: "#signInMount",
   authStatus: "#authStatus",
   authSignOutButton: "#authSignOutButton",
-  localDevButton: "#localDevButton",
   adminOnboardingForm: "#adminOnboardingForm",
   adminFullNameInput: "#adminFullNameInput",
   adminDepartmentInput: "#adminDepartmentInput",

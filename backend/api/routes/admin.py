@@ -4,6 +4,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Header, HTTPException, Request
 
+from schemas.api_responses import AdminMeResponse
 from services.auth_service import AuthError, require_org_admin
 from services.database import connect
 
@@ -11,20 +12,18 @@ from services.database import connect
 router = APIRouter(prefix="/admin")
 
 
-@router.get("/me")
+@router.get("/me", response_model=AdminMeResponse)
 def admin_me(
     request: Request,
     authorization: Annotated[str | None, Header(alias="Authorization")] = None,
-    x_local_clerk_user_id: Annotated[str | None, Header(alias="X-Local-Clerk-User-Id")] = None,
     x_organization_slug: Annotated[str | None, Header(alias="X-Organization-Slug")] = None,
-) -> dict:
+) -> AdminMeResponse:
     try:
         with connect() as conn:
             current_member = require_org_admin(
                 conn,
                 authorization=authorization,
                 organization_slug=x_organization_slug,
-                local_clerk_user_id=x_local_clerk_user_id,
                 settings=request.app.state.settings,
             )
         return {
