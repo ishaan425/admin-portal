@@ -1,0 +1,98 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: growqr_admin_portal
+      POSTGRES_USER: growqr
+      POSTGRES_PASSWORD: growqr_local_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U growqr -d growqr_admin_portal"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    build: ./backend
+    command: ["alembic", "upgrade", "head"]
+    environment:
+      DATABASE_URL: postgresql://growqr:growqr_local_password@postgres:5432/growqr_admin_portal
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  seed:
+    build: ./backend
+    command: ["python", "-m", "scripts.apply_sql_files", "db/seeds/002_seed_demo_organizations.sql"]
+    environment:
+      DATABASE_URL: postgresql://growqr:growqr_local_password@postgres:5432/growqr_admin_portal
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  api:
+    build: ./backend
+    command: ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "8000:8000"
+    environment:
+      APP_ENV: local
+      DATABASE_URL: postgresql://growqr:growqr_local_password@postgres:5432/growqr_admin_portal
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_RESUME_PARSE_MODEL: ${OPENAI_RESUME_PARSE_MODEL:-gpt-5.4}
+      CLERK_SECRET_KEY: ${CLERK_SECRET_KEY:-}
+      CLERK_INVITE_REDIRECT_URL: ${CLERK_INVITE_REDIRECT_URL:-http://localhost:3000/login}
+      CLERK_INVITE_NOTIFY: ${CLERK_INVITE_NOTIFY:-true}
+      CLERK_JWKS_URL: ${CLERK_JWKS_URL:-}
+      CLERK_ISSUER: ${CLERK_ISSUER:-}
+      AUTH_ALLOW_LOCAL_HEADERS: ${AUTH_ALLOW_LOCAL_HEADERS:-true}
+      API_CORS_ORIGINS: ${API_CORS_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173}
+      API_MAX_REQUEST_BODY_BYTES: ${API_MAX_REQUEST_BODY_BYTES:-15728640}
+      STORAGE_BACKEND: local
+      LOCAL_STORAGE_ROOT: /app/.local_storage
+      S3_PREFIX: ${S3_PREFIX:-growqr-admin}
+      QUEUE_BACKEND: local
+      LOCAL_QUEUE_ROOT: /app/.local_queue
+      QUEUE_RECEIVE_MAX_MESSAGES: ${QUEUE_RECEIVE_MAX_MESSAGES:-5}
+      QUEUE_WAIT_TIME_SECONDS: ${QUEUE_WAIT_TIME_SECONDS:-2}
+      WORKER_POLL_INTERVAL_SECONDS: ${WORKER_POLL_INTERVAL_SECONDS:-2}
+    volumes:
+      - local_storage:/app/.local_storage
+      - local_queue:/app/.local_queue
+    depends_on:
+      seed:
+        condition: service_completed_successfully
+
+  worker:
+    build: ./backend
+    command: ["python", "-m", "workers.resume_upload_worker"]
+    environment:
+      APP_ENV: local
+      DATABASE_URL: postgresql://growqr:growqr_local_password@postgres:5432/growqr_admin_portal
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_RESUME_PARSE_MODEL: ${OPENAI_RESUME_PARSE_MODEL:-gpt-5.4}
+      CLERK_SECRET_KEY: ${CLERK_SECRET_KEY:-}
+      CLERK_INVITE_REDIRECT_URL: ${CLERK_INVITE_REDIRECT_URL:-http://localhost:3000/login}
+      CLERK_INVITE_NOTIFY: ${CLERK_INVITE_NOTIFY:-true}
+      STORAGE_BACKEND: local
+      LOCAL_STORAGE_ROOT: /app/.local_storage
+      S3_PREFIX: ${S3_PREFIX:-growqr-admin}
+      QUEUE_BACKEND: local
+      LOCAL_QUEUE_ROOT: /app/.local_queue
+      QUEUE_RECEIVE_MAX_MESSAGES: ${QUEUE_RECEIVE_MAX_MESSAGES:-5}
+      QUEUE_WAIT_TIME_SECONDS: ${QUEUE_WAIT_TIME_SECONDS:-2}
+      WORKER_POLL_INTERVAL_SECONDS: ${WORKER_POLL_INTERVAL_SECONDS:-2}
+    volumes:
+      - local_storage:/app/.local_storage
+      - local_queue:/app/.local_queue
+    depends_on:
+      seed:
+        condition: service_completed_successfully
+
+volumes:
+  postgres_data:
+  local_storage:
+  local_queue:

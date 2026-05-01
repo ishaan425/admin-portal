@@ -1,0 +1,590 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GrowQR Admin</title>
+    <link rel="stylesheet" href="./styles.css?v=page-modules-20260501" />
+  </head>
+  <body>
+    <section id="authShell" class="auth-shell">
+      <div class="auth-card">
+        <div class="brand-lockup auth-brand">
+          <div class="brand-mark">GQ</div>
+          <div>
+            <p class="brand-name">GrowQR</p>
+            <p class="brand-subtitle">Admin Portal</p>
+          </div>
+        </div>
+        <div class="auth-copy">
+          <p class="eyebrow">Admin Access</p>
+          <h1>Sign in to continue</h1>
+          <p>Use your GrowQR admin account. Access is verified against your organization role.</p>
+        </div>
+        <div id="signInMount" class="sign-in-mount"></div>
+        <div id="authStatus" class="auth-status">Loading secure sign in...</div>
+        <button id="authSignOutButton" class="secondary-button full-width hidden" type="button">
+          Sign out
+        </button>
+        <button id="localDevButton" class="secondary-button full-width hidden" type="button">
+          Continue as local admin
+        </button>
+      </div>
+    </section>
+
+    <section id="onboardingShell" class="auth-shell hidden">
+      <form id="adminOnboardingForm" class="onboarding-card">
+        <div class="brand-lockup auth-brand">
+          <div class="brand-mark">GQ</div>
+          <div>
+            <p class="brand-name">GrowQR</p>
+            <p class="brand-subtitle">Admin Portal</p>
+          </div>
+        </div>
+
+        <div class="auth-copy">
+          <p class="eyebrow">Admin Setup</p>
+          <h1>Confirm your profile</h1>
+          <p>This helps shape your workspace and team invites.</p>
+        </div>
+
+        <label class="field">
+          <span>Full name</span>
+          <input id="adminFullNameInput" type="text" autocomplete="name" required />
+        </label>
+
+        <fieldset class="role-fieldset">
+          <legend>Position</legend>
+          <div class="role-grid" id="positionGrid">
+            <button class="role-tile" type="button" data-position="Placement Head">
+              <span>🎓</span>
+              <strong>Placement Head</strong>
+            </button>
+            <button class="role-tile" type="button" data-position="Teacher">
+              <span>👩‍🏫</span>
+              <strong>Teacher</strong>
+            </button>
+            <button class="role-tile" type="button" data-position="HR / Recruiter">
+              <span>💼</span>
+              <strong>HR / Recruiter</strong>
+            </button>
+            <button class="role-tile" type="button" data-position="Coordinator">
+              <span>🗂️</span>
+              <strong>Coordinator</strong>
+            </button>
+            <button class="role-tile" type="button" data-position="Mentor">
+              <span>🧭</span>
+              <strong>Mentor</strong>
+            </button>
+            <button class="role-tile" type="button" data-position="Other">
+              <span>✍️</span>
+              <strong>Other</strong>
+            </button>
+          </div>
+          <input id="customPositionInput" class="hidden" type="text" placeholder="Enter position" />
+        </fieldset>
+
+        <div class="form-grid">
+          <label class="field">
+            <span>Department</span>
+            <input id="adminDepartmentInput" type="text" autocomplete="organization-title" placeholder="Optional" />
+          </label>
+          <label class="field">
+            <span>Phone</span>
+            <input id="adminPhoneInput" type="tel" autocomplete="tel" placeholder="Optional" />
+          </label>
+        </div>
+
+        <button id="finishSetupButton" class="primary-button full-width" type="submit">Enter Admin Portal</button>
+      </form>
+    </section>
+
+    <main id="appPage" class="page hidden">
+      <aside class="sidebar">
+        <div class="sidebar-logo-row">
+          <img src="./growqr-logo.jpg" alt="GrowQR" class="sidebar-logo" width="176" height="48" />
+          <button class="sidebar-collapse-button" type="button" aria-label="Collapse sidebar">‹</button>
+        </div>
+        <nav class="side-nav" aria-label="Admin navigation">
+          <div class="side-section">
+            <p>Admin Panel</p>
+            <button id="dashboardNavButton" class="active" type="button">
+              <span class="nav-icon grid-icon"></span>
+              Dashboard
+            </button>
+          </div>
+          <div class="side-section">
+            <p>User Management</p>
+            <button type="button">
+              <span class="nav-icon users-icon"></span>
+              All Users
+            </button>
+            <button id="studentsNavButton" type="button">
+              <span class="nav-icon user-plus-icon"></span>
+              Students
+            </button>
+          </div>
+          <div class="side-section">
+            <p>Role Play</p>
+            <button type="button">
+              <span class="nav-icon folder-icon"></span>
+              Categories
+            </button>
+            <button type="button">
+              <span class="nav-icon file-icon"></span>
+              Use Cases
+            </button>
+          </div>
+          <div class="side-section">
+            <p>Upskilling</p>
+            <button type="button">
+              <span class="nav-icon book-icon"></span>
+              Course
+            </button>
+            <button type="button">
+              <span class="nav-icon clipboard-icon"></span>
+              Assessment
+            </button>
+          </div>
+          <div class="side-section">
+            <p>Academics</p>
+            <button type="button">
+              <span class="nav-icon cap-icon"></span>
+              University Ops
+            </button>
+          </div>
+          <div class="side-section settings-section">
+            <button type="button">
+              <span class="nav-icon settings-icon"></span>
+              Settings
+            </button>
+          </div>
+        </nav>
+        <div class="sidebar-footer">
+          <div class="sidebar-user-card">
+            <span id="sidebarUserInitial">A</span>
+            <div>
+              <strong id="sidebarUserName">Admin</strong>
+              <small id="sidebarUserEmail">admin@growqr.ai</small>
+            </div>
+          </div>
+          <button id="sidebarLogoutButton" class="sidebar-logout" type="button">
+            <span class="nav-icon logout-icon"></span>
+            Logout
+          </button>
+        </div>
+      </aside>
+
+      <div class="workspace">
+        <header class="header">
+          <div class="topbar-title">
+            <h2>GrowQR Instance</h2>
+            <p id="topbarDate">Friday, May 1, 2026 • 9:27:24 AM</p>
+          </div>
+          <div class="header-actions">
+            <button id="clearButton" class="secondary-button utility-clear-button" type="button">Clear</button>
+            <div id="userButton" class="user-button"></div>
+            <div id="adminIdentity" class="admin-identity"></div>
+            <div class="topbar-user-card" aria-label="Signed in admin">
+              <span id="topbarUserInitial">A</span>
+              <div>
+                <strong id="topbarUserName">Admin</strong>
+                <small id="topbarUserEmail">admin@growqr.ai</small>
+              </div>
+              <span class="chevron-icon"></span>
+            </div>
+            <button id="signOutButton" class="secondary-button hidden" type="button">Sign out</button>
+          </div>
+        </header>
+
+        <section id="dashboardPage" class="old-dashboard-page">
+          <div class="old-dashboard-breadcrumb">
+            <div>
+              <span>Home</span>
+              <span>›</span>
+              <strong>Dashboard</strong>
+            </div>
+            <button id="refreshDashboardButton" class="old-outline-button" type="button">
+              <span class="refresh-icon"></span>
+              Refresh
+            </button>
+          </div>
+
+          <section class="old-dashboard-grid" aria-label="Dashboard overview">
+            <article class="old-dashboard-card old-dashboard-card-large user-total-card">
+              <div class="old-card-title-row">
+                <h2><span class="nav-icon users-icon"></span>Total Resumes</h2>
+                <button class="old-more-button" type="button" aria-label="More options">...</button>
+              </div>
+              <div class="old-big-metric">
+                <strong id="dashboardTotalUploads">0</strong>
+                <span id="dashboardGrowthLabel">Latest batch</span>
+              </div>
+              <div id="dashboardMiniBars" class="mini-bars empty-chart">
+                No upload trend yet.
+              </div>
+              <div class="old-card-footer">
+                <span>Students created: <strong id="dashboardStudentsCreated">0</strong></span>
+                <span class="arrow-icon"></span>
+              </div>
+            </article>
+
+            <article class="old-dashboard-card old-dashboard-card-large lifecycle-card">
+              <div class="old-card-title-row">
+                <div>
+                  <h2>Resume Processing</h2>
+                  <p>Total <strong id="dashboardLifecycleTotal">0</strong></p>
+                </div>
+              </div>
+              <div class="lifecycle-content">
+                <div class="lifecycle-list">
+                  <div><span class="legend-dot success"></span>Parsed <strong id="legendParsed">0</strong></div>
+                  <div><span class="legend-dot warning"></span>Needs Review <strong id="legendReview">0</strong></div>
+                  <div><span class="legend-dot orange"></span>Invites Sent <strong id="legendActive">0</strong></div>
+                  <div><span class="legend-dot danger"></span>Failed <strong id="legendFailed">0</strong></div>
+                </div>
+                <div id="processingDonut" class="lifecycle-donut">
+                  <span id="processingDonutValue">0%</span>
+                </div>
+              </div>
+            </article>
+
+            <section class="module-card-grid" aria-label="Admin modules">
+              <article class="module-card">
+                <div><span class="nav-icon folder-icon sky"></span><strong>Categories</strong><span class="arrow-icon"></span></div>
+                <h3 id="dashboardCategoriesCount">0</h3>
+                <p>Role-play category library</p>
+                <a href="#">Open module</a>
+              </article>
+              <article class="module-card">
+                <div><span class="nav-icon file-icon indigo"></span><strong>Use Cases</strong><span class="arrow-icon"></span></div>
+                <h3 id="dashboardUseCasesCount">0</h3>
+                <p>Published scenario templates</p>
+                <a href="#">Open module</a>
+              </article>
+              <article class="module-card">
+                <div><span class="nav-icon book-icon emerald"></span><strong>Courses</strong><span class="arrow-icon"></span></div>
+                <h3 id="dashboardCoursesCount">0</h3>
+                <p>Live upskilling courses</p>
+                <a href="#">Open module</a>
+              </article>
+              <article class="module-card">
+                <div><span class="nav-icon clipboard-icon amber"></span><strong>Assessments</strong><span class="arrow-icon"></span></div>
+                <h3 id="dashboardAssessmentsCount">0</h3>
+                <p>Active assessment records</p>
+                <a href="#">Open module</a>
+              </article>
+              <article class="module-card">
+                <div><span class="nav-icon cap-icon fuchsia"></span><strong>University Ops</strong><span class="arrow-icon"></span></div>
+                <h3 id="dashboardUniversityCount">0</h3>
+                <p>0 cohorts • 0 course + 0 assessment assignments</p>
+                <a href="#">Open module</a>
+              </article>
+            </section>
+
+            <article class="old-dashboard-card old-dashboard-card-full">
+              <div class="old-card-title-row old-card-title-wrap">
+                <div>
+                  <h2>Student Source Bubble Map</h2>
+                  <p>Shows processed students from real uploaded resume batches only.</p>
+                </div>
+                <div class="segmented-control">
+                  <button class="active" type="button">By Class</button>
+                  <button type="button">By Course</button>
+                </div>
+              </div>
+              <div class="source-summary">
+                <div><span>Current Source</span><strong id="sourceTopLabel">No batch data</strong><small>Upload resumes to populate</small></div>
+                <div><span>Students</span><strong id="sourceStudentsCount">0 students</strong><small>Parsed from uploaded resumes</small></div>
+                <div><span>Points Plotted</span><strong id="sourceFilesCount">0 points</strong><small>Real parsed resume points only</small></div>
+              </div>
+              <div id="bubbleMap" class="bubble-map old-bubble-map" aria-label="Student source bubble map">
+                <div class="bubble-empty">No processed students yet.</div>
+              </div>
+            </article>
+
+            <article class="old-dashboard-card old-dashboard-card-full comparison-card">
+              <div class="old-card-title-row old-card-title-wrap">
+                <div>
+                  <h2>Student Comparison Intelligence</h2>
+                  <p>Only real student scoring data will appear here.</p>
+                </div>
+              </div>
+              <div class="comparison-stats">
+                <div><span>Best Student</span><strong>No student data</strong><small>No score data yet</small></div>
+                <div><span>Best Class/Cohort</span><strong>No class data</strong><small>No cohort score data yet</small></div>
+                <div><span>Best Course</span><strong>No course data</strong><small>No course score data yet</small></div>
+                <div><span>At Risk Students</span><strong id="dashboardNeedsReview">0</strong><small>Score below 45% with active assignments</small></div>
+              </div>
+              <div class="comparison-layout">
+                <div class="comparison-chart">
+                  <p>Real comparison bars will appear after scoring data exists.</p>
+                  <div class="comparison-empty">
+                    No comparison data yet.
+                  </div>
+                </div>
+                <div class="rankboard">
+                  <h3>Top Student Rankboard</h3>
+                  <div class="rank-empty">No ranked students yet.</div>
+                </div>
+              </div>
+              <div class="performance-grid">
+                <div>
+                  <h3>Best Classes</h3>
+                  <p>No class performance data yet.</p>
+                </div>
+                <div>
+                  <h3>Best Courses</h3>
+                  <p>No course performance data yet.</p>
+                </div>
+              </div>
+            </article>
+
+            <article class="old-dashboard-card old-dashboard-card-half recent-activity-card">
+              <div class="old-card-title-row old-card-title-wrap">
+                <div>
+                  <h2>Recent Activity</h2>
+                  <p><span class="spark-icon"></span><strong>AI Summary:</strong> 0 submissions, 0 new students, 0 course updates</p>
+                </div>
+              </div>
+              <div class="activity-tabs">
+                <button class="active" type="button">All</button>
+                <button type="button">Enrollments</button>
+                <button type="button">Submissions</button>
+                <button type="button">Course Updates</button>
+              </div>
+              <div class="activity-empty">No activity found for this tab.</div>
+              <div class="activity-pagination">
+                <span>Page 1 of 1</span>
+                <div><button disabled>Previous</button><button disabled>Next</button></div>
+              </div>
+            </article>
+
+            <article class="old-dashboard-card old-dashboard-card-half assignment-card">
+              <div class="old-card-title-row">
+                <h2>Assignment & Quiz Overview</h2>
+              </div>
+              <div class="progress-list">
+                <div><p><span>Total Assignments</span><strong>0 / 0</strong></p><i><span class="green" style="width: 0%"></span></i></div>
+                <div><p><span>Quiz Engagement</span><strong>0 / 0</strong></p><i><span class="blue" style="width: 0%"></span></i></div>
+                <div><p><span>In Progress</span><strong>0 / 0</strong></p><i><span class="orange" style="width: 0%"></span></i></div>
+                <div><p><span>Average Score</span><strong>0%</strong></p><i><span class="red" style="width: 0%"></span></i></div>
+              </div>
+              <p class="muted-line">Performance metrics are refreshed throughout the day.</p>
+            </article>
+
+            <article class="old-dashboard-card old-dashboard-card-half daily-card">
+              <div class="old-card-title-row">
+                <h2><span class="nav-icon file-icon"></span>Daily Resume Uploads</h2>
+                <button class="old-more-button" type="button" aria-label="More options">...</button>
+              </div>
+              <div class="daily-stat-grid">
+                <div><span>Today</span><strong id="dailyTodayCount">0</strong></div>
+                <div><span>Last 7 Days</span><strong id="dailyWeekCount">0</strong></div>
+                <div><span>Last 30 Days</span><strong id="dailyMonthCount">0</strong></div>
+              </div>
+              <div id="uploadBars" class="upload-bars old-upload-bars" aria-label="Recent upload bars"></div>
+            </article>
+
+            <article class="old-dashboard-card old-dashboard-card-half trend-card">
+              <div class="old-card-title-row">
+                <div>
+                  <h2>Platform Activity Trends</h2>
+                  <p>Last 30 days • <strong>0</strong> total activities • Peak day: <strong>N/A</strong></p>
+                </div>
+                <button class="old-more-button" type="button" aria-label="More options">...</button>
+              </div>
+              <div class="platform-totals">
+                <div><span>Users</span><strong>0</strong></div>
+                <div><span>Courses</span><strong>0</strong></div>
+                <div><span>Assessments</span><strong>0</strong></div>
+                <div><span>Categories</span><strong>0</strong></div>
+                <div><span>Use Cases</span><strong>0</strong></div>
+              </div>
+              <div class="trend-chart empty-chart">
+                No platform activity yet.
+              </div>
+            </article>
+          </section>
+
+          <section class="dashboard-runtime hidden" aria-hidden="true">
+            <div id="dropZone">
+              <input id="fileInput" type="file" accept="application/pdf,.pdf" multiple />
+              <button id="browseButton" type="button">Choose PDFs</button>
+            </div>
+            <span id="dropTitle">Drop resumes here</span>
+            <span id="dropHint">Only PDF files are accepted.</span>
+            <span id="fileCount">0</span>
+            <div id="fileList">No resumes selected yet.</div>
+            <button id="uploadButton" type="button">Upload Resumes</button>
+            <span id="progressTitle">Ready for upload</span>
+            <span id="resultBadge">Idle</span>
+            <div id="processBar"></div>
+            <span id="liveStatus">Waiting for resumes.</span>
+            <span id="stepUpload"></span>
+            <span id="stepParse"></span>
+            <span id="stepInvite"></span>
+            <span id="dashboardFailedParsing">0</span>
+            <div id="batchSummary"></div>
+            <div id="friendlyResults">No upload started yet.</div>
+            <div id="recentUploadsTable"></div>
+          </section>
+        </section>
+
+        <section id="studentsPage" class="hidden">
+          <section class="management-hero">
+            <div>
+              <h1>Student Management</h1>
+              <p class="intro-copy">Manage and track uploaded students.</p>
+            </div>
+            <div class="management-actions">
+              <button id="exportCsvButton" class="old-outline-button" type="button">
+                <span class="download-icon" aria-hidden="true">↓</span>
+                Export
+                <span class="chevron-icon"></span>
+              </button>
+              <button id="studentToggleUploadButton" class="primary-button" type="button">Upload Resumes</button>
+            </div>
+          </section>
+
+          <section id="studentUploadSection" class="old-upload-card hidden">
+            <div class="old-card-header">
+              <h2>Bulk Student Upload (PDF)</h2>
+            </div>
+            <div class="old-card-content">
+              <div id="studentDropZone" class="old-drop-zone">
+                <input id="studentFileInput" type="file" accept="application/pdf,.pdf" multiple />
+                <div class="old-upload-icon" aria-hidden="true">↑</div>
+                <p id="studentDropTitle">Drag & drop PDF resumes here</p>
+                <span id="studentDropHint">Invalid name/email entries are marked failed automatically.</span>
+                <button id="studentBrowseButton" class="secondary-button" type="button">Browse Files</button>
+              </div>
+
+              <div id="studentSelectedFiles" class="old-selected-files hidden">
+                <div class="old-selected-header">
+                  <h3>Selected Files (<span id="studentFileCount">0</span>)</h3>
+                  <div class="old-button-row">
+                    <button id="studentClearFilesButton" class="secondary-button small-button" type="button">Clear All</button>
+                    <button id="studentUploadButton" class="primary-button small-button" type="button">Upload & Process</button>
+                  </div>
+                </div>
+                <div id="studentProgressWrap" class="old-progress-wrap hidden">
+                  <div class="old-progress-track"><span id="studentProgressBar"></span></div>
+                  <p id="studentProgressText">Processing resumes in batches... 0%</p>
+                </div>
+                <div id="studentFileList" class="old-file-list">No resumes selected yet.</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="stats-grid student-stats-grid" aria-label="Student statistics">
+            <article class="stat-card">
+              <div>
+                <strong id="totalStudentsCount">0</strong>
+                <p>Total Students</p>
+              </div>
+              <span class="stat-icon users-icon"></span>
+              <small>Latest batch total</small>
+            </article>
+            <article class="stat-card">
+              <div>
+                <strong id="invitedStudentsCount">0</strong>
+                <p>Invited</p>
+              </div>
+              <span class="stat-icon link-icon"></span>
+              <small>Invitation sent</small>
+            </article>
+            <article class="stat-card">
+              <div>
+                <strong id="progressStudentsCount">0</strong>
+                <p>In Progress</p>
+              </div>
+              <span class="stat-icon warning clock-icon"></span>
+              <small>Parsing or invite pending</small>
+            </article>
+            <article class="stat-card">
+              <div>
+                <strong id="activeStudentsCount">0</strong>
+                <p>Active</p>
+              </div>
+              <span class="stat-icon success user-check-icon"></span>
+              <small>Accepted invite</small>
+            </article>
+            <article class="stat-card">
+              <div>
+                <strong id="reviewStudentsCount">0</strong>
+                <p>Expired</p>
+              </div>
+              <span class="stat-icon danger user-x-icon"></span>
+              <small>Needs review</small>
+            </article>
+          </section>
+
+          <section class="management-card">
+            <div class="management-filter-row">
+              <div class="search-field">
+                <span class="search-icon" aria-hidden="true"></span>
+                <input id="studentSearchInput" type="search" placeholder="Search by name or email..." />
+              </div>
+              <div class="select-shell">
+                <span class="filter-icon" aria-hidden="true"></span>
+                <select id="studentStatusFilter" aria-label="Filter by status">
+                  <option value="all">All Status</option>
+                  <option value="invited">Invited</option>
+                  <option value="in_progress">In Progress</option>
+                  <option value="active">Active</option>
+                  <option value="review">Expired</option>
+                </select>
+              </div>
+              <div class="select-shell">
+                <span class="clock-icon" aria-hidden="true"></span>
+                <select id="studentDateFilter" aria-label="Filter by date">
+                  <option value="all">All Time</option>
+                  <option value="today">Today</option>
+                  <option value="week">This Week</option>
+                  <option value="month">This Month</option>
+                </select>
+              </div>
+              <button id="refreshTableButton" class="old-icon-button" type="button" aria-label="Refresh">↻</button>
+              <button id="clearFiltersButton" class="hidden" type="button">Clear</button>
+            </div>
+
+            <div id="bulkActionBar" class="bulk-action-bar hidden">
+              <span><strong id="selectedStudentCount">0</strong> selected</span>
+              <button id="clearSelectionButton" class="secondary-button" type="button">Clear</button>
+            </div>
+
+            <div class="student-table">
+              <div class="student-row table-head">
+                <span><input id="selectAllStudents" type="checkbox" aria-label="Select all students" /></span>
+                <span>Name</span>
+                <span>Email</span>
+                <span>QR / Login</span>
+                <span>Status</span>
+                <span>Created</span>
+                <span>Actions</span>
+              </div>
+              <div id="studentTableBody" class="student-table-body">
+                <div class="table-empty">No students found</div>
+              </div>
+            </div>
+            <div class="student-pagination">
+              <p>Showing 0 to 0 of 0 students</p>
+              <div>
+                <button type="button" disabled>‹ Previous</button>
+                <span>Page 1 of 1</span>
+                <button type="button" disabled>Next ›</button>
+              </div>
+            </div>
+          </section>
+
+        </section>
+      </div>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script src="./config.js?v=page-modules-20260501"></script>
+    <script type="module" src="./app.js?v=page-modules-20260501"></script>
+  </body>
+</html>

@@ -1,0 +1,20 @@
+.env
+.env.*
+!.env.example
+
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+.DS_Store
+.local_storage/
+.local_queue/
+parsed_resumes/
+*.log
+
+ISHAAN GUPTA CV.pdf
+pdf-vision-parsing-handoff.pdf
+image.png
