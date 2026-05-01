@@ -103,18 +103,19 @@ Purpose:
 - help compare GrowQR/organization branding expectations
 ```
 
-### 2.5 Bulk resume parsing JSON step
+### 2.5 Bulk resume upload API and worker step
 
-[parse_bulk_resumes.py](parse_bulk_resumes.py)
+The old local JSON parsing script has been removed. Resume uploads now flow
+through the FastAPI boundary and queue-backed worker.
 
 Purpose:
 
 ```text
-- parse one or many uploaded PDF resumes
-- use OpenAI vision extraction as the primary path
-- fall back to text extraction when vision rendering or vision parsing fails
-- write extracted resume data to JSON for review and later downstream ingestion
-- keep parsing independent from candidate creation, Postgres writes, and Clerk invitations for now
+- API stores uploaded PDFs in private object storage
+- API creates resume_parse_batches and resume_parse_items records
+- API enqueues the batch and returns quickly
+- worker parses resumes with OpenAI extraction
+- worker sends Clerk invites and updates Postgres
 ```
 
 Reusable service:
@@ -124,13 +125,13 @@ Reusable service:
 Current boundary:
 
 ```text
-bulk uploaded resumes -> extracted JSON results
+bulk uploaded resumes -> object storage + queued parse/invite workflow
 ```
 
 Next boundary:
 
 ```text
-extracted JSON results + CSV source-of-truth data -> candidate intake pipeline
+candidate intake workflow -> richer admin review and assignment tools
 ```
 
 ---
@@ -625,41 +626,39 @@ candidate profile becomes active
 
 We should keep the code split into reusable backend units.
 
-Recommended module layout:
+Current module layout:
 
 ```text
-admin_portal_new/
-  clerk_invitation_client.py
-  send_hardcoded_candidate_invite.py
-
-future backend modules:
+backend/
+  api/
+    main.py
   services/
-    candidate_upsert.py
-    candidate_profile_upsert.py
+    auth_service.py
+    batch_status_service.py
     clerk_invite_service.py
+    clerk_webhook_service.py
+    queue_service.py
     resume_parser.py
-    bulk_candidate_ingest_service.py
-    qr_service.py
+    resume_upload_enqueue_service.py
+    resume_upload_worker_service.py
+    storage_service.py
 
   workers/
-    bulk_candidate_ingest_worker.py
-
-  api/
-    candidates.py
+    resume_upload_worker.py
 ```
 
-### What each future module should do
+### What each active module does
 
-`candidate_upsert.py`
+`auth_service.py`
 
 ```text
-create or update organization_members candidate rows
+verify Clerk/local admin access against organization_members
 ```
 
-`candidate_profile_upsert.py`
+`batch_status_service.py`
 
 ```text
-create or update candidate_profiles rows
+return upload batch status for frontend polling
 ```
 
 `clerk_invite_service.py`
@@ -674,22 +673,22 @@ build org-branded Clerk invitation payloads and call Clerk
 extract structured candidate data from resumes
 ```
 
-`bulk_candidate_ingest_service.py`
+`resume_upload_enqueue_service.py`
 
 ```text
-coordinate CSV rows, parsing, validation, dedupe, and invite creation
+create parse batch/items, store PDFs, and enqueue worker job
 ```
 
-`qr_service.py`
+`resume_upload_worker_service.py`
 
 ```text
-generate QR token, store QR fields, resolve QR scan lookup
+parse queued resumes, write parsed data, and trigger invites
 ```
 
-`bulk_candidate_ingest_worker.py`
+`storage_service.py`
 
 ```text
-run candidate ingest asynchronously outside request/response cycle
+store original resume PDFs locally or in S3
 ```
 
 ---

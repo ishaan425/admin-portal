@@ -170,26 +170,6 @@ async def parse_pending_resume_parse_item(
         }
 
 
-async def process_pending_resume_parse_item(
-    conn: psycopg.Connection,
-    item: dict[str, Any],
-    storage: ObjectStorage,
-    parser_config: ResumeParserConfig,
-) -> dict[str, Any]:
-    mark_parse_item_processing(conn, item["id"])
-    item_result = await parse_pending_resume_parse_item(
-        item=item,
-        storage=storage,
-        parser_config=parser_config,
-    )
-    parsed_resume = item_result.pop("_parsed_resume", None)
-    if item_result["status"] == "parsed":
-        mark_parse_item_parsed(conn, item_result["resume_parse_item_id"], parsed_resume or {})
-    else:
-        mark_parse_item_failed(conn, item_result["resume_parse_item_id"], item_result.get("error_message") or "")
-    return item_result
-
-
 def get_uploading_admin_member(
     conn: psycopg.Connection,
     job: ResumeUploadJob,
