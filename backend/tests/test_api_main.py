@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from api import main
+from api.routes import admin, health, resumes, webhooks
 from api.main import create_app
 from services.settings import AppSettings
 
@@ -54,7 +54,7 @@ def test_health_endpoint():
 
 
 def test_ready_endpoint_checks_database(monkeypatch):
-    monkeypatch.setattr(main, "connect", lambda: FakeConn())
+    monkeypatch.setattr(health, "connect", lambda: FakeConn())
     app = create_app(AppSettings())
     client = TestClient(app)
 
@@ -80,8 +80,8 @@ def test_admin_me_returns_current_admin(monkeypatch):
     app = create_app(AppSettings(auth_allow_local_headers=True))
     client = TestClient(app)
 
-    monkeypatch.setattr(main, "connect", lambda: FakeConn())
-    monkeypatch.setattr(main, "require_org_admin", lambda *args, **kwargs: fake_member())
+    monkeypatch.setattr(admin, "connect", lambda: FakeConn())
+    monkeypatch.setattr(admin, "require_org_admin", lambda *args, **kwargs: fake_member())
 
     response = client.get(
         "/admin/me",
@@ -100,14 +100,14 @@ def test_batch_status_endpoint_returns_batch(monkeypatch):
     app = create_app(AppSettings(auth_allow_local_headers=True))
     client = TestClient(app)
 
-    monkeypatch.setattr(main, "connect", lambda: FakeConn())
+    monkeypatch.setattr(resumes, "connect", lambda: FakeConn())
     monkeypatch.setattr(
-        main,
+        resumes,
         "require_org_admin",
         lambda *args, **kwargs: fake_member(),
     )
     monkeypatch.setattr(
-        main,
+        resumes,
         "get_resume_upload_batch_status",
         lambda conn, organization_id, batch_id: {
             "batch_id": batch_id,
@@ -130,14 +130,14 @@ def test_clerk_webhook_endpoint_links_candidate(monkeypatch):
     app = create_app(AppSettings(clerk_webhook_secret="whsec_test"))
     client = TestClient(app)
 
-    monkeypatch.setattr(main, "connect", lambda: FakeConn())
+    monkeypatch.setattr(webhooks, "connect", lambda: FakeConn())
     monkeypatch.setattr(
-        main,
+        webhooks,
         "verify_clerk_webhook",
         lambda payload, headers, secret: {"type": "user.created"},
     )
     monkeypatch.setattr(
-        main,
+        webhooks,
         "link_candidate_from_clerk_event",
         lambda conn, event: type(
             "Result",

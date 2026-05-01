@@ -51,59 +51,22 @@ Core product capabilities in scope:
 
 ## 2. What Is Already Implemented
 
-The following local scripts already exist in `admin_portal_new`:
+The prototype scripts have been replaced by the current backend API, worker,
+and reusable service modules.
 
-### 2.1 Clerk invitation smoke test
+### 2.1 Reusable Clerk invitation client
 
-[test_clerk_invitation.py](C:/Users/OMEN/Desktop/GrowQR/admin_portal_new/test_clerk_invitation.py)
-
-Purpose:
-
-```text
-- send one or many Clerk invitations
-- dry-run invitation payloads
-- support CSV-based email input
-- test Clerk notify / no-notify behavior
-- validate current Clerk integration behavior
-```
-
-### 2.2 Reusable Clerk invitation client
-
-[clerk_invitation_client.py](C:/Users/OMEN/Desktop/GrowQR/admin_portal_new/clerk_invitation_client.py)
+[backend/integrations/clerk_client.py](backend/integrations/clerk_client.py)
 
 Purpose:
 
 ```text
 - centralize Clerk invitation API calls
 - centralize payload building
-- make invite creation reusable by future worker/backend code
+- make invite creation reusable by worker/backend code
 ```
 
-### 2.3 Hardcoded candidate invite script
-
-[send_hardcoded_candidate_invite.py](C:/Users/OMEN/Desktop/GrowQR/admin_portal_new/send_hardcoded_candidate_invite.py)
-
-Purpose:
-
-```text
-- test one-candidate invitation flow
-- validate metadata fields such as candidate name/phone
-- provide a narrow stepping stone before bulk upload implementation
-```
-
-### 2.4 Local HTML preview for branded invite layout
-
-[growqr_invitation_preview.html](C:/Users/OMEN/Desktop/GrowQR/admin_portal_new/growqr_invitation_preview.html)
-
-Purpose:
-
-```text
-- visualize branded invitation content locally
-- act as a design preview for the email body
-- help compare GrowQR/organization branding expectations
-```
-
-### 2.5 Bulk resume upload API and worker step
+### 2.2 Bulk resume upload API and worker step
 
 The old local JSON parsing script has been removed. Resume uploads now flow
 through the FastAPI boundary and queue-backed worker.
@@ -632,6 +595,13 @@ Current module layout:
 backend/
   api/
     main.py
+    routes/
+      admin.py
+      health.py
+      resumes.py
+      webhooks.py
+  integrations/
+    clerk_client.py
   services/
     auth_service.py
     batch_status_service.py
@@ -639,7 +609,9 @@ backend/
     clerk_webhook_service.py
     queue_service.py
     resume_parser.py
+    resume_upload_contracts.py
     resume_upload_enqueue_service.py
+    resume_upload_records.py
     resume_upload_worker_service.py
     storage_service.py
 
@@ -667,6 +639,12 @@ return upload batch status for frontend polling
 build org-branded Clerk invitation payloads and call Clerk
 ```
 
+`integrations/clerk_client.py`
+
+```text
+low-level Clerk invitation HTTP client and payload builder
+```
+
 `resume_parser.py`
 
 ```text
@@ -677,6 +655,18 @@ extract structured candidate data from resumes
 
 ```text
 create parse batch/items, store PDFs, and enqueue worker job
+```
+
+`resume_upload_contracts.py`
+
+```text
+typed API/queue/worker contracts for resume upload flow
+```
+
+`resume_upload_records.py`
+
+```text
+database and storage helpers for resume upload batches/items
 ```
 
 `resume_upload_worker_service.py`

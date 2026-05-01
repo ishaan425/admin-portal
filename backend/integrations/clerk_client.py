@@ -68,7 +68,7 @@ def build_invitation_payload(
     public_metadata: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     metadata = {
-        "source": "admin_portal_new_hardcoded_candidate_invite",
+        "source": "growqr_admin_portal",
         "invited": True,
         "tenant_name": tenant_name,
         "tenant_logo_url": tenant_logo_url,

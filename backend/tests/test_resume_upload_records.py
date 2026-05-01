@@ -1,7 +1,7 @@
 import pytest
 
-from services.bulk_candidate_upload_service import (
-    UploadedResume,
+from services.resume_upload_contracts import UploadedResume
+from services.resume_upload_records import (
     create_parse_item,
     store_uploaded_resume,
     validate_uploaded_resume,

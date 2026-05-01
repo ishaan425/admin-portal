@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Any
 
 import psycopg
@@ -10,14 +9,8 @@ from psycopg.types.json import Jsonb
 
 from services.resume_parser import ResumeParseError
 from services.settings import get_settings
+from services.resume_upload_contracts import UploadedResume
 from services.storage_service import ObjectStorage, build_resume_file_key
-
-
-@dataclass(frozen=True)
-class UploadedResume:
-    file_name: str
-    content_type: str
-    content: bytes
 
 
 def validate_uploaded_resume(file: UploadedResume, max_file_size_bytes: int) -> None:

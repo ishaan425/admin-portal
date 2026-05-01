@@ -1,8 +1,7 @@
 from services.auth_service import CurrentOrgMember
-from services.bulk_candidate_upload_service import UploadedResume
+from services.resume_upload_contracts import RESUME_UPLOAD_JOB_TYPE, UploadedResume
 from services.queue_service import LocalFileQueue
 from services.resume_upload_enqueue_service import (
-    RESUME_UPLOAD_JOB_TYPE,
     create_resume_upload_batch,
     enqueue_resume_upload_batch,
 )

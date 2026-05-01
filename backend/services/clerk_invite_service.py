@@ -9,7 +9,7 @@ from typing import Any
 import psycopg
 from psycopg.types.json import Jsonb
 
-from clerk_invitation_client import (
+from integrations.clerk_client import (
     CandidateInvite,
     build_invitation_payload,
     create_clerk_invitation,

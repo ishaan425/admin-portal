@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import asyncio
-from dataclasses import dataclass
+import logging
 from datetime import datetime, timezone
 from typing import Any
 
@@ -13,20 +13,16 @@ from psycopg.types.json import Jsonb
 from services.auth_service import CurrentOrgMember
 from services.clerk_invite_service import ClerkInviteConfig, invite_candidates_from_resume_batch
 from services.resume_parser import ResumeParserConfig, parse_resume
-from services.resume_upload_enqueue_service import RESUME_UPLOAD_JOB_TYPE
+from services.resume_upload_contracts import RESUME_UPLOAD_JOB_TYPE, ResumeUploadJob
 from services.storage_service import ObjectStorage
+
+
+logger = logging.getLogger(__name__)
+TERMINAL_BATCH_STATUSES = {"completed", "completed_with_errors"}
 
 
 class ResumeUploadWorkerError(RuntimeError):
     pass
-
-
-@dataclass(frozen=True)
-class ResumeUploadJob:
-    batch_id: str
-    organization_id: str
-    uploaded_by_clerk_user_id: str
-    resend_invites: bool = True
 
 
 def resume_upload_job_from_message(body: dict[str, Any]) -> ResumeUploadJob:
@@ -56,6 +52,41 @@ async def process_resume_upload_job(
     parse_concurrency: int = 1,
 ) -> dict[str, Any]:
     current_member = get_uploading_admin_member(conn, job)
+    batch_state = get_resume_upload_batch_state(conn, job.organization_id, job.batch_id)
+    if not batch_state:
+        raise ResumeUploadWorkerError("Resume upload batch was not found.")
+    if batch_state["status"] in TERMINAL_BATCH_STATUSES:
+        logger.info(
+            "Skipping already completed resume upload batch",
+            extra={
+                "batch_id": job.batch_id,
+                "status": batch_state["status"],
+            },
+        )
+        return {
+            "batch_id": job.batch_id,
+            "organization": {
+                "id": current_member.organization_id,
+                "name": current_member.organization_name,
+                "slug": current_member.organization_slug,
+            },
+            "status": batch_state["status"],
+            "parsed_count": batch_state["parsed_count"],
+            "failed_count": batch_state["failed_count"],
+            "invited_count": 0,
+            "invite_failed_count": 0,
+            "invite_skipped_count": 0,
+            "items": [],
+        }
+
+    logger.info(
+        "Processing resume upload batch",
+        extra={
+            "batch_id": job.batch_id,
+            "organization_id": job.organization_id,
+            "parse_concurrency": parse_concurrency,
+        },
+    )
     mark_batch_processing(conn, job.batch_id)
 
     item_results = await process_pending_resume_parse_items(
@@ -78,7 +109,7 @@ async def process_resume_upload_job(
         resend=job.resend_invites,
     )
 
-    return {
+    result = {
         "batch_id": job.batch_id,
         "organization": {
             "id": current_member.organization_id,
@@ -92,6 +123,17 @@ async def process_resume_upload_job(
         "invite_skipped_count": invite_result["skipped_count"],
         "items": item_results,
     }
+    logger.info(
+        "Finished resume upload batch",
+        extra={
+            "batch_id": job.batch_id,
+            "parsed_count": parsed_count,
+            "failed_count": failed_count,
+            "invited_count": invite_result["sent_count"],
+            "invite_failed_count": invite_result["failed_count"],
+        },
+    )
+    return result
 
 
 async def process_pending_resume_parse_items(
@@ -239,6 +281,29 @@ def get_pending_resume_parse_items(
         }
         for row in rows
     ]
+
+
+def get_resume_upload_batch_state(
+    conn: psycopg.Connection,
+    organization_id: str,
+    batch_id: str,
+) -> dict[str, Any] | None:
+    row = conn.execute(
+        """
+        select status, parsed_count, failed_count
+        from resume_parse_batches
+        where organization_id = %s
+          and id = %s
+        """,
+        (organization_id, batch_id),
+    ).fetchone()
+    if not row:
+        return None
+    return {
+        "status": row[0],
+        "parsed_count": row[1] or 0,
+        "failed_count": row[2] or 0,
+    }
 
 
 def mark_batch_processing(conn: psycopg.Connection, batch_id: str) -> None:

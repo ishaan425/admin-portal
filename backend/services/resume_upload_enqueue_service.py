@@ -2,13 +2,18 @@
 
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 import psycopg
 
 from services.auth_service import CurrentOrgMember
-from services.bulk_candidate_upload_service import (
+from services.resume_upload_contracts import (
+    RESUME_UPLOAD_JOB_TYPE,
+    ResumeUploadQueuePayload,
     UploadedResume,
+)
+from services.resume_upload_records import (
     create_batch,
     create_parse_item,
     store_uploaded_resume,
@@ -19,7 +24,7 @@ from services.resume_parser import ResumeParseError
 from services.storage_service import ObjectStorage
 
 
-RESUME_UPLOAD_JOB_TYPE = "resume_upload_batch"
+logger = logging.getLogger(__name__)
 
 
 def create_resume_upload_batch(
@@ -38,6 +43,14 @@ def create_resume_upload_batch(
         uploaded_by=current_member.clerk_user_id,
         total_files=len(files),
         status="pending",
+    )
+    logger.info(
+        "Created resume upload batch",
+        extra={
+            "batch_id": batch_id,
+            "organization_id": current_member.organization_id,
+            "total_files": len(files),
+        },
     )
 
     items: list[dict[str, Any]] = []
@@ -68,13 +81,12 @@ def create_resume_upload_batch(
             }
         )
 
-    queue_payload = {
-        "job_type": RESUME_UPLOAD_JOB_TYPE,
-        "batch_id": batch_id,
-        "organization_id": current_member.organization_id,
-        "uploaded_by_clerk_user_id": current_member.clerk_user_id,
-        "resend_invites": True,
-    }
+    queue_payload = ResumeUploadQueuePayload(
+        batch_id=batch_id,
+        organization_id=current_member.organization_id,
+        uploaded_by_clerk_user_id=current_member.clerk_user_id,
+        resend_invites=True,
+    )
 
     return {
         "batch_id": batch_id,
@@ -87,7 +99,7 @@ def create_resume_upload_batch(
         "uploaded_by_clerk_user_id": current_member.clerk_user_id,
         "total_files": len(files),
         "items": items,
-        "queue_payload": queue_payload,
+        "queue_payload": queue_payload.to_message(),
     }
 
 
@@ -96,6 +108,13 @@ def enqueue_resume_upload_batch(
     enqueue_result: dict[str, Any],
 ) -> dict[str, Any]:
     message_id = queue.send_message(enqueue_result["queue_payload"])
+    logger.info(
+        "Enqueued resume upload batch",
+        extra={
+            "batch_id": enqueue_result.get("batch_id"),
+            "queue_message_id": message_id,
+        },
+    )
     return {
         key: value
         for key, value in {
